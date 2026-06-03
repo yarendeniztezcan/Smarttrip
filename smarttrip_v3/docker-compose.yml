@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    container_name: smarttrip_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/smarttrip
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - smarttrip_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx:
+    image: nginx:alpine
+    container_name: smarttrip_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/static:/usr/share/nginx/html
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - smarttrip_net
+    restart: unless-stopped
+
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: smarttrip_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=smarttrip
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smarttrip_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smarttrip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: smarttrip_redis
+    networks:
+      - smarttrip_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  smarttrip_net:
+    driver: bridge

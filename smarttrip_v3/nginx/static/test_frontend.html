@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartTrip - Akilli Tatil Planlayici</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #f59e0b;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-light: #334155;
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation .circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-animation .circle:nth-child(1) {
+            width: 400px; height: 400px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            top: -100px; left: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-animation .circle:nth-child(2) {
+            width: 300px; height: 300px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            bottom: -50px; right: -50px;
+            animation-delay: -5s;
+        }
+
+        .bg-animation .circle:nth-child(3) {
+            width: 250px; height: 250px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            top: 50%; left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 50%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--gradient-1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-icon {
+            font-size: 1.1rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--card-light);
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        input::placeholder { color: #64748b; }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 45px;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            margin-top: 32px;
+            padding: 18px 32px;
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .submit-btn:active { transform: translateY(-1px); }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(30deg);
+            transition: all 0.6s;
+        }
+
+        .submit-btn:hover::after {
+            left: 100%;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .loading-overlay.show { display: block; }
+
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+        }
+
+        .spinner {
+            width: 80px; height: 80px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner-inner {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .loading-sub {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Results */
+        .results {
+            display: none;
+            margin-top: 40px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .results.show { display: block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Summary Banner */
+        .summary-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 24px;
+            padding: 40px;
+            color: white;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .summary-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -10%;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(102,126,234,0.3), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .summary-city {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .summary-meta {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 28px;
+            position: relative;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-box:hover { transform: translateY(-5px); }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 6px;
+        }
+
+        .stat-box.budget .stat-value {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: fadeInUp 0.3s ease;
+            border: 1px solid;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        /* Day Cards */
+        .day-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 28px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .day-card:hover { transform: translateY(-3px); }
+
+        .day-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 5px;
+            background: var(--gradient-1);
+        }
+
+        .day-card:nth-child(2)::before { background: var(--gradient-2); }
+        .day-card:nth-child(3)::before { background: var(--gradient-3); }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-left: 12px;
+        }
+
+        .day-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .day-badge {
+            background: var(--gradient-1);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .day-info {
+            display: flex;
+            gap: 24px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            padding-left: 12px;
+        }
+
+        .day-info span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Place Items */
+        .place-list { padding-left: 12px; }
+
+        .place-item {
+            display: flex;
+            gap: 18px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .place-item:last-child { border-bottom: none; }
+
+        .place-item:hover {
+            background: rgba(255,255,255,0.02);
+            margin: 0 -12px;
+            padding: 20px 12px;
+            border-radius: 12px;
+        }
+
+        .place-number {
+            width: 44px; height: 44px;
+            min-width: 44px;
+            background: var(--gradient-1);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .place-content { flex: 1; }
+
+        .place-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .place-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .place-meta .tag {
+            background: var(--card-light);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+        }
+
+        /* Day Footer */
+        .day-footer {
+            margin-top: 24px;
+            padding: 24px;
+            background: var(--card-light);
+            border-radius: 20px;
+            padding-left: 32px;
+        }
+
+        .budget-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .budget-item {
+            text-align: center;
+        }
+
+        .budget-item-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .budget-item-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .budget-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 2px dashed var(--border);
+        }
+
+        .budget-total-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .budget-total-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Food Recommendation */
+        .food-rec {
+            margin-top: 20px;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+            border-radius: 16px;
+            border-left: 4px solid var(--success);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .food-rec-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .food-rec-text {
+            font-size: 0.95rem;
+            color: #6ee7b7;
+            line-height: 1.5;
+        }
+
+        .food-rec-text strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #34d399;
+            font-size: 1rem;
+        }
+
+        /* Debug Box */
+        .debug-box {
+            background: var(--card);
+            color: var(--text-light);
+            padding: 24px;
+            border-radius: 16px;
+            margin-top: 20px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+
+        .debug-box strong {
+            color: var(--primary-light);
+            display: block;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .debug-box code {
+            background: var(--card-light);
+            padding: 3px 10px;
+            border-radius: 6px;
+            color: #f87171;
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .logo { font-size: 2.5rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-card { padding: 24px; }
+            .summary-stats { grid-template-columns: 1fr; }
+            .budget-grid { grid-template-columns: 1fr; }
+            .day-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .place-meta { flex-direction: column; gap: 6px; }
+            .summary-city { font-size: 1.8rem; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <div class="header">
+        <div class="logo">SmartTrip</div>
+        <p class="tagline">Konsept tabanli otomatik tatil planlayici</p>
+        <div class="badge-container">
+            <div class="badge">🐳 Docker</div>
+            <div class="badge">☁️ Cloud</div>
+            <div class="badge">🗺️ Google Places</div>
+            <div class="badge">🤖 AI Rota</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <form id="tripForm">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label><span class="label-icon">📍</span> Sehir</label>
+                        <input type="text" id="sehir" value="Stockholm" placeholder="orn: Stockholm, Istanbul, Paris..." required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label><span class="label-icon">🎨</span> Konseptler</label>
+                        <input type="text" id="konseptler" value="tarihi, doga" placeholder="tarihi, doga, sanat, yemek, mix" required>
+                        <p class="hint">Virgulle ayirin. Her gun farkli konsept: G1 tarihi, G2 doga, G3 sanat...</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="label-icon">📅</span> Gun Sayisi</label>
+                        <input type="number" id="gun_sayisi" value="3" min="1" max="14" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="label-icon">⚡</span> Tempo</label>
+                        <select id="tempo">
+                            <option value="yavas">Yavas (3-4 mekan/gun)</option>
+                            <option value="hizli">Hizli (5-6 mekan/gun)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="label-icon">💰</span> Butce Limiti (USD)</label>
+                        <input type="number" id="butce_limiti" placeholder="500">
+                        <p class="hint">Bos = limit yok</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="label-icon">🚗</span> Ulasim Tipi</label>
+                        <select id="ulasim_tipi">
+                            <option value="toplu_tasima">Toplu Tasima</option>
+                            <option value="taksi">Taksi</option>
+                            <option value="yuruyus">Yuruyus</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    ✨ Plan Olustur
+                </button>
+            </form>
+        </div>
+
+        <div class="loading-overlay" id="loading">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="spinner-inner">✈️</div>
+            </div>
+            <div class="loading-text">Rota hesaplaniyor<span class="loading-dots"></span></div>
+            <div class="loading-sub">Mekanlar kesfediliyor · Butce analiz ediliyor · En iyi rota bulunuyor</div>
+        </div>
+
+        <div class="results" id="result"></div>
+    </div>
+
+    <div class="footer">
+        <p>yok — Bulut Bilisim Dersi Projesi · <a href="/api/docs" target="_blank">API Docs</a></p>
+    </div>
+
+    <script>
+        document.getElementById('tripForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            btn.disabled = true;
+            btn.textContent = 'Hesaplaniyor...';
+            loading.classList.add('show');
+            result.classList.remove('show');
+            result.innerHTML = '';
+
+            const body = {
+                sehir: document.getElementById('sehir').value,
+                konseptler: document.getElementById('konseptler').value.split(',').map(s => s.trim()).filter(s => s),
+                gun_sayisi: parseInt(document.getElementById('gun_sayisi').value),
+                tempo: document.getElementById('tempo').value,
+                butce_limiti: document.getElementById('butce_limiti').value ? parseFloat(document.getElementById('butce_limiti').value) : null,
+                ulasim_tipi: document.getElementById('ulasim_tipi').value
+            };
+
+            try {
+                const res = await fetch('/api/plan-trip', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.detail || `HTTP ${res.status}: ${res.statusText}`);
+                }
+
+                let html = '';
+
+                if (data.notlar && data.notlar.length > 0) {
+                    data.notlar.forEach(n => {
+                        const type = n.includes('UYARI') ? 'alert-error' : (n.includes('API') ? 'alert-info' : 'alert-warning');
+                        html += `<div class="alert ${type}">${n}</div>`;
+                    });
+                }
+
+                html += `
+                    <div class="summary-banner">
+                        <div class="summary-city">${data.sehir}</div>
+                        <div class="summary-meta">${data.gun_sayisi} gun · ${data.konseptler.join(' + ')} · ${data.ulasim_tipi}</div>
+                        <div class="summary-stats">
+                            <div class="stat-box budget">
+                                <div class="stat-value">$${data.toplam_bütce}</div>
+                                <div class="stat-label">Toplam Butce</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${data.toplam_sure}</div>
+                                <div class="stat-label">Toplam Sure</div>
+                            </div>
+                            ${data.butce_limiti ? `
+                            <div class="stat-box ${data.limit_asildi ? 'budget' : ''}">
+                                <div class="stat-value">$${data.butce_limiti}</div>
+                                <div class="stat-label">Limit</div>
+                            </div>
+                            ` : '<div class="stat-box"><div class="stat-value">∞</div><div class="stat-label">Limit</div></div>'}
+                        </div>
+                    </div>
+                `;
+
+                data.gunler.forEach((gun, idx) => {
+                    html += `<div class="day-card">`;
+                    html += `
+                        <div class="day-header">
+                            <div class="day-title">📅 Gun ${gun.gun}</div>
+                            <div class="day-badge">${gun.konsept}</div>
+                        </div>
+                        <div class="day-info">
+                            <span>⏱️ ${gun.gunluk_toplam_sure}</span>
+                            <span>🚶 ${gun.gunluk_yuruyus}</span>
+                            <span>💵 $${gun.gunluk_toplam}/gun</span>
+                        </div>
+                    `;
+
+                    html += `<div class="place-list">`;
+                    gun.mekanlar.forEach(m => {
+                        html += `
+                            <div class="place-item">
+                                <div class="place-number">${m.sirano}</div>
+                                <div class="place-content">
+                                    <div class="place-name">${m.isim}</div>
+                                    <div class="place-meta">
+                                        <span class="tag">⏱️ ${m.tahmini_sure} dk</span>
+                                        <span class="tag">💰 $${m.tahmini_ucret}</span>
+                                        <span class="tag">⭐ ${m.rating}</span>
+                                        ${m.bir_onceki_mesafe_km > 0 ? `<span>📍 ${m.bir_onceki_mesafe_km} km</span>` : ''}
+                                        ${m.bir_onceki_ulasim_dk > 0 ? `<span>🚗 ${m.bir_onceki_ulasim_dk} dk</span>` : ''}
+                                        ${m.bir_onceki_yuruyus_dk > 0 ? `<span>🚶 ${m.bir_onceki_yuruyus_dk} dk</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+
+                    html += `
+                        <div class="day-footer">
+                            <div class="budget-grid">
+                                <div class="budget-item">
+                                    <div class="budget-item-label">Mekan Ucretleri</div>
+                                    <div class="budget-item-value">$${gun.gunluk_mekan_ucreti}</div>
+                                </div>
+                                <div class="budget-item">
+                                    <div class="budget-item-label">Yemek</div>
+                                    <div class="budget-item-value">$${gun.gunluk_yemek}</div>
+                                </div>
+                                <div class="budget-item">
+                                    <div class="budget-item-label">Ulasim</div>
+                                    <div class="budget-item-value">$${gun.gunluk_ulasim}</div>
+                                </div>
+                            </div>
+                            <div class="budget-total-row">
+                                <div class="budget-total-label">Gun Toplami</div>
+                                <div class="budget-total-value">$${gun.gunluk_toplam}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (gun.yemek_onerisi) {
+                        html += `
+                            <div class="food-rec">
+                                <div class="food-rec-icon">🍽️</div>
+                                <div class="food-rec-text"><strong>Ogle Yemegi Onerisi</strong>${gun.yemek_onerisi.replace('Ogle yemegi: ', '')}</div>
+                            </div>
+                        `;
+                    }
+
+                    html += `</div>`;
+                });
+
+                result.innerHTML = html;
+                result.classList.add('show');
+
+            } catch (err) {
+                let debugInfo = '';
+                if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+                    debugInfo = `
+                        <div class="debug-box">
+                            <strong>🔧 Hata Ayiklama</strong>
+                            <code>Failed to fetch</code> hatasi aliyorsunuz.<br><br>
+                            <strong>1.</strong> Container'lar calisiyor mu?<br>
+                            <code>docker-compose ps</code><br><br>
+                            <strong>2.</strong> API loglarini kontrol edin:<br>
+                            <code>docker-compose logs api</code><br><br>
+                            <strong>3.</strong> Yeniden baslatin:<br>
+                            <code>docker-compose down && docker-compose up --build -d</code><br><br>
+                            <strong>4.</strong> Bu sayfayi <code>file://</code> ile actiysaniz, <code>http://localhost/</code> adresine gidin.
+                        </div>
+                    `;
+                }
+
+                result.innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>${debugInfo}`;
+                result.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ ';
+                loading.classList.remove('show');
+            }
+        };
+    </script>
+
+</body>
+</html>

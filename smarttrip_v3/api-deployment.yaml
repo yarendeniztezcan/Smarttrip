@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smarttrip-api-deployment
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: smarttrip-api
+  template:
+    metadata:
+      labels:
+        app: smarttrip-api
+    spec:
+      containers:
+      - name: api
+        image: yarendeniztezcan/smarttrip-api:v1 
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: smarttrip-secrets
+              key: GEMINI_API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api 
+spec:
+  type: ClusterIP
+  selector:
+    app: smarttrip-api
+  ports:
+  - port: 8000
+    targetPort: 8000
